@@ -1,11 +1,10 @@
 from glob import glob
 
 from convert_hls import ConvertHls
+with open('/tmp/glob.txt', 'r') as f:
+    glob_expr = f.read()
+all_files = glob(glob_expr.strip())
 
-# all_files = glob('/datasets/HLS.S30.T11SPC.20160*.hdf')
-#
-# for each in all_files:
-#     print('converting {}'.format(each))
-#     ConvertHls(each).start()
-
-ConvertHls('/Users/wphyo/Projects/HLS/MSLSP/SCC/data/hls/HLS.S30.T11SPC.2016100.v1.4.hdf').start()
+for each in all_files:
+    print('converting {}'.format(each))
+    ConvertHls(each).start()
