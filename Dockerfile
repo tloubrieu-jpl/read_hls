@@ -1,0 +1,11 @@
+FROM continuumio/anaconda3
+MAINTAINER Andrew Jiang <andrew.h.jiang@jpl.nasa.gov>
+
+RUN mkdir -p /app
+WORKDIR /app
+COPY . .
+RUN conda install -c conda-forge pyhdf
+RUN python -m pip install -r requirements.txt
+
+CMD python convert_in_loop.py
+
