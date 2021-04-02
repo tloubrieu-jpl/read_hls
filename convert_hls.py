@@ -83,10 +83,10 @@ class ConvertHls:
         transformer = partial(pyproj.transform, fromproj, toproj)
         lons, lats = transformer(xs, ys)
 
-        self.__ds_output.createDimension('utm_x', len(lons))
-        self.__ds_output.createDimension('utm_y', len(lats))
-        nc_lons = self.__ds_output.createVariable('utm_x', 'f4', ('utm_x',), zlib=True)
-        nc_lats = self.__ds_output.createVariable('utm_y', 'f4', ('utm_y',), zlib=True)
+        self.__ds_output.createDimension('lon', len(lons))
+        self.__ds_output.createDimension('lat', len(lats))
+        nc_lons = self.__ds_output.createVariable('lon', 'f4', ('lon',), zlib=True)
+        nc_lats = self.__ds_output.createVariable('lat', 'f4', ('lat',), zlib=True)
         nc_lats[:] = lats
         nc_lons[:] = lons
         # nc_lats[:] = ys
@@ -98,8 +98,8 @@ class ConvertHls:
         dt_since = datetime.strptime('1981001+0000', '%Y%j%z')
         filling_dt = int(file_datetime.timestamp()) - int(dt_since.timestamp())
 
-        self.__ds_output.createDimension('static_time', 1)
-        nc_time = self.__ds_output.createVariable('static_time', 'i4', ('static_time',), zlib=True)
+        self.__ds_output.createDimension('time', 1)
+        nc_time = self.__ds_output.createVariable('time', 'i4', ('time',), zlib=True)
 
         nc_time[:] = np.full((1,), filling_dt)
         nc_time.long_name = 'reference time of sst field'
@@ -118,15 +118,18 @@ class ConvertHls:
             variable_params = {
                 'varname': sds,
                 'datatype': 'i4',
-                'dimensions': ('utm_x', 'utm_y',),
+                'dimensions': ('time', 'lat', 'lon',),
                 'zlib': True,
             }
             if '_FillValue' in attributes_dic:
-                variable_params['fill_value'] = attributes_dic['_FillValue']
+                variable_params['fill_value'] = int(attributes_dic['_FillValue'])
             nc_current_band = self.__ds_output.createVariable(**variable_params)
-            nc_current_band[:] = current_band
+            nc_current_band[:] = [current_band]
+            float_attributes = {'scale_factor', 'add_offset'}
             for k, v in attributes_dic.items():
-                if k != '_FillValue':
+                if k in float_attributes :
+                    nc_current_band.setncattr(k, float(v))
+                elif k != '_FillValue':
                     nc_current_band.setncattr(k, v)
         return
 
