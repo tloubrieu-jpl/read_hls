@@ -115,7 +115,15 @@ class ConvertHls:
             attributes_dic = self.__sd_file.select(sds).attributes()
             # add also the values for band01
             current_band = self.__sd_file.select(sds).get()
-            nc_current_band = self.__ds_output.createVariable(sds, 'i4', ('utm_x', 'utm_y',), zlib=True)
+            variable_params = {
+                'varname': sds,
+                'datatype': 'i4',
+                'dimensions': ('utm_x', 'utm_y',),
+                'zlib': True,
+            }
+            if '_FillValue' in attributes_dic:
+                variable_params['fill_value'] = attributes_dic['_FillValue']
+            nc_current_band = self.__ds_output.createVariable(**variable_params)
             nc_current_band[:] = current_band
             for k, v in attributes_dic.items():
                 if k != '_FillValue':
