@@ -83,6 +83,10 @@ class ConvertHls:
         transformer = partial(pyproj.transform, fromproj, toproj)
         lons, lats = transformer(xs, ys)
 
+        # subset lat/lon to create a test file
+        lons = lons[500:600]
+        lats = lats[400:450]
+
         self.__ds_output.createDimension('lon', len(lons))
         self.__ds_output.createDimension('lat', len(lats))
         nc_lons = self.__ds_output.createVariable('lon', 'f4', ('lon',), zlib=True)
@@ -124,7 +128,7 @@ class ConvertHls:
             if '_FillValue' in attributes_dic:
                 variable_params['fill_value'] = int(attributes_dic['_FillValue'])
             nc_current_band = self.__ds_output.createVariable(**variable_params)
-            nc_current_band[:] = [current_band]
+            nc_current_band[:] = [current_band[400:450,500:600]]
             float_attributes = {'scale_factor', 'add_offset'}
             for k, v in attributes_dic.items():
                 if k in float_attributes :
