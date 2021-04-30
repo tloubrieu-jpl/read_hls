@@ -1,13 +1,14 @@
-# Read HLS data
+# Work with HLS data
+
+This package enables:
+ - Read HLS v1.4 data
+ - Download HLS data and convert them in netCDF4
+ - Deploy as a kubernetes job
+ 
 
 ## Pre-requisites
 
 Use conda 
-
-Get data from HLS, for example:
-
-https://hls.gsfc.nasa.gov/data/v1.4/L30/2021/01/U/D/T/HLS.L30.T01UDT.2021001.v1.4.hdf
-https://hls.gsfc.nasa.gov/data/v1.4/L30/2021/01/U/D/T/HLS.L30.T01UDT.2021001.v1.4.hdf.hdr
 
 ## Install
 
@@ -18,12 +19,33 @@ Virtual environment
     conda install --file requirements_conda.txt
     pip install requirements.txt
 
-## Change the path to your hdf file
+## Run 
 
-In read_hls.py
+Download HLS data and convert them to netcdf4: 
+
+    python ./download_convert_tile.py --help
+    
+
+## Create the docker image
+
+    docker build . -t tloubrieu/hls_download_convert
+    docker login
+    docker push tloubrieu/hls_download_convert
+
+## Run on MOC cluster as a kubernetes job
+
+You need to log in a MOC cluster.
+
+Create a persistent volume to host the converted data:
+
+    kubectl create -f persistent_storage.yaml -n sdap
+    
+Launch the job:
+
+    kubectl apply -f job.yaml -n sdap
 
 
-# Run
 
-    python read_hls.py
+    
+    
  

@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: download-and-convert
+spec:
+  template:
+    spec:
+      containers:
+      - name: hls-download-convert
+        image: tloubrieu/hls_download_convert
+        workingDir: /app
+        command: ["python", "download_convert_tile.py", "--type", "S30", "--years", "2015", "--tiles", "18TYN", "--tmp-dir", "/data/tmp", "--output-dir", "/data/"]
+        volumeMounts:
+          - name: data-volume
+            mountPath: "/data"
+      restartPolicy: Never
+      volumes:
+        - name: data-volume
+  backoffLimit: 1

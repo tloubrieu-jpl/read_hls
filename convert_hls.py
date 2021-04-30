@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-
+import logging
+from pathlib import Path
 from pyhdf.SD import SD, SDC
 import pycrs
 import pyproj
@@ -10,6 +11,8 @@ import numpy as np
 import netCDF4 as nc
 
 
+
+
 class ConvertHls:
     def __init__(self, input_file):
         if not os.path.exists(input_file) or not os.path.isfile(input_file):
@@ -17,6 +20,7 @@ class ConvertHls:
         self.__input_file = input_file
         self.__sd_file = None
         self.__ds_output = None
+        self.__logger = logging.getLogger(__name__)
         pass
 
     def __get_hdr_dict(self, filename):
@@ -83,10 +87,6 @@ class ConvertHls:
         transformer = partial(pyproj.transform, fromproj, toproj)
         lons, lats = transformer(xs, ys)
 
-        # subset lat/lon to create a test file
-        lons = lons[500:600]
-        lats = lats[400:450]
-
         self.__ds_output.createDimension('lon', len(lons))
         self.__ds_output.createDimension('lat', len(lats))
         nc_lons = self.__ds_output.createVariable('lon', 'f4', ('lon',), zlib=True)
@@ -128,7 +128,7 @@ class ConvertHls:
             if '_FillValue' in attributes_dic:
                 variable_params['fill_value'] = int(attributes_dic['_FillValue'])
             nc_current_band = self.__ds_output.createVariable(**variable_params)
-            nc_current_band[:] = [current_band[400:450,500:600]]
+            nc_current_band[:] = [current_band]
             float_attributes = {'scale_factor', 'add_offset'}
             for k, v in attributes_dic.items():
                 if k in float_attributes :
@@ -137,8 +137,13 @@ class ConvertHls:
                     nc_current_band.setncattr(k, v)
         return
 
-    def start(self):
-        self.__ds_output = nc.Dataset('{}.nc'.format(self.__input_file), 'w', format='NETCDF4')
+    def start(self, output_dir=None):
+        if output_dir:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            input_file = os.path.basename(self.__input_file)
+            output_file = os.path.join(output_dir, f'{input_file}.nc')
+        self.__logger.info('writing file %s', output_file)
+        self.__ds_output = nc.Dataset(output_file, 'w', format='NETCDF4')
         self.__sd_file = SD(self.__input_file, SDC.READ)
         self.__convert_to_lat_lon()
         self.__capture_time()
