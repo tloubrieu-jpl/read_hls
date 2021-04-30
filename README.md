@@ -8,7 +8,9 @@ This package enables:
 
 ## Pre-requisites
 
-Use conda 
+Use conda
+
+Access to the MOC cluster or another kubernetes cluster for deployement (optional)
 
 ## Install
 
