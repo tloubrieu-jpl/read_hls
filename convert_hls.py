@@ -138,10 +138,10 @@ class ConvertHls:
         return
 
     def start(self, output_dir=None):
-        if output_dir:
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            input_file = os.path.basename(self.__input_file)
-            output_file = os.path.join(output_dir, f'{input_file}.nc')
+        if output_dir is None:  # if no output_dir is not provided, write it to the same directory as input file
+            output_dir = os.path.dirname(self.__input_file)
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_file = os.path.join(output_dir, f'{os.path.basename(self.__input_file)}.nc')
         self.__logger.info('writing file %s', output_file)
         self.__ds_output = nc.Dataset(output_file, 'w', format='NETCDF4')
         self.__sd_file = SD(self.__input_file, SDC.READ)
